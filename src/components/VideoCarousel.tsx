@@ -12,10 +12,7 @@ interface VideoItem {
   fallbackSrc?: string; // Optional fallback source if main source fails
 }
 
-// Fix: Use the correct file name with spaces for Microsoft Hololens video 
-const HOLOLENS_VIDEO_URL = '/video_reels/Microsoft Hololens Logo Trim.mp4';
-const HOLOLENS_VIDEO_URL_FALLBACK = '/video_reels/MicrosoftHololensLogoTrim.mp4';
-
+// Remove Hololens videos and use working videos only
 const videos: VideoItem[] = [
   {
     src: '/video_reels/vfx-reel--star-wars--the-old-republic.mp4',
@@ -36,11 +33,6 @@ const videos: VideoItem[] = [
   {
     src: '/video_reels/MortarShellExplodingInSoftDirt.mp4',
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg'
-  },
-  {
-    src: HOLOLENS_VIDEO_URL,
-    fallbackSrc: HOLOLENS_VIDEO_URL_FALLBACK,
-    thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg'
   },
   {
     src: '/video_reels/Tornadotorch.mp4',
