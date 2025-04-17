@@ -5,18 +5,18 @@ import { Play, Pause, RotateCcw, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image";
 
-// Create a fallback mechanism for file paths
-const getVideoSrc = (primaryPath: string, fallbackPath?: string) => {
-  // This function helps handle potential filename mismatches
-  // It will be replaced with the primary path in the client
-  return primaryPath;
-};
+// Define the interface for video items
+interface VideoItem {
+  src: string;
+  thumbnail: string;
+  fallbackSrc?: string; // Optional fallback source if main source fails
+}
 
-// Manual fix for Microsoft Hololens video - hard-coded path
-const HOLOLENS_VIDEO_URL = '/video_reels/MicrosoftHololensLogoTrim.mp4';
+// Fix: Use the correct file name with spaces for Microsoft Hololens video 
+const HOLOLENS_VIDEO_URL = '/video_reels/Microsoft Hololens Logo Trim.mp4';
+const HOLOLENS_VIDEO_URL_FALLBACK = '/video_reels/MicrosoftHololensLogoTrim.mp4';
 
-// Directly reference both versions of the filename to handle caching issues
-const videos = [
+const videos: VideoItem[] = [
   {
     src: '/video_reels/vfx-reel--star-wars--the-old-republic.mp4',
     thumbnail: '/video_reels/thumbnails/star-wars-thumb.jpg'
@@ -38,7 +38,8 @@ const videos = [
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg'
   },
   {
-    src: HOLOLENS_VIDEO_URL,  // Use the constant
+    src: HOLOLENS_VIDEO_URL,
+    fallbackSrc: HOLOLENS_VIDEO_URL_FALLBACK,
     thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg'
   },
   {
@@ -58,9 +59,10 @@ const VideoCarousel = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
+  const [videoLoadErrors, setVideoLoadErrors] = useState<boolean[]>(new Array(videos.length).fill(false));
 
+  // Function to generate thumbnails
   useEffect(() => {
-    // Function to generate thumbnails
     const generateThumbnails = async () => {
       for (const video of videos) {
         const videoElement = document.createElement('video');
@@ -69,6 +71,18 @@ const VideoCarousel = () => {
         
         try {
           await new Promise((resolve) => {
+            const onError = () => {
+              // Try fallback source if available
+              if (video.fallbackSrc) {
+                videoElement.src = video.fallbackSrc;
+                videoElement.load();
+              } else {
+                resolve(null);
+              }
+            };
+            
+            videoElement.addEventListener('error', onError, { once: true });
+            
             videoElement.addEventListener('seeked', () => {
               const canvas = document.createElement('canvas');
               canvas.width = 600;
@@ -104,87 +118,57 @@ const VideoCarousel = () => {
     }
   }, [thumbnailsGenerated]);
 
-  // Enhanced autoplay functionality
+  // Enhanced video error handling with fallback support
   useEffect(() => {
-    const initiatePlayback = () => {
-      videoRefs.current.forEach((video) => {
-        if (video) {
-          // Make sure video is muted for autoplay to work
-          video.muted = true;
-          
-          try {
-            const playPromise = video.play();
-            if (playPromise !== undefined) {
-              playPromise.catch(error => {
-                console.log("Autoplay prevented, attempting again...", error);
-                
-                // Try a different approach
-                setTimeout(() => {
-                  video.play().catch(e => console.log("Second attempt failed:", e));
-                }, 1000);
-              });
-            }
-          } catch (err) {
-            console.error("Error trying to play video:", err);
-          }
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+      
+      const handleError = () => {
+        console.error(`Error loading video ${videos[index].src}`);
+        
+        // Try fallback if available
+        if (videos[index].fallbackSrc && video.src !== videos[index].fallbackSrc) {
+          console.log(`Trying fallback for video ${index}: ${videos[index].fallbackSrc}`);
+          video.src = videos[index].fallbackSrc;
+          video.load();
+          video.play().catch(err => {
+            console.error(`Fallback play failed for video ${index}:`, err);
+            setVideoLoadErrors(prev => {
+              const newErrors = [...prev];
+              newErrors[index] = true;
+              return newErrors;
+            });
+          });
+        } else {
+          // If no fallback or fallback failed, mark as error
+          setVideoLoadErrors(prev => {
+            const newErrors = [...prev];
+            newErrors[index] = true;
+            return newErrors;
+          });
         }
-      });
-    };
-
-    // Try to initiate playback multiple times
-    initiatePlayback();
-    const t1 = setTimeout(initiatePlayback, 1000);
-    const t2 = setTimeout(initiatePlayback, 3000);
-    
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+      };
+      
+      video.addEventListener('error', handleError);
+      
+      return () => {
+        video.removeEventListener('error', handleError);
+      };
+    });
   }, []);
 
-  // Special handling for Microsoft Hololens video (index 5)
+  // Autoplay videos on mount
   useEffect(() => {
-    // Focus on the Microsoft Hololens video
-    const hololensVideoIndex = 5; // Index in the videos array
-    const hololensVideo = videoRefs.current[hololensVideoIndex];
-    
-    if (hololensVideo) {
-      console.log("Setting up special handling for Microsoft Hololens video");
-      
-      // Ensure the src is correct
-      if (hololensVideo.src !== HOLOLENS_VIDEO_URL) {
-        hololensVideo.src = HOLOLENS_VIDEO_URL;
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        // Make sure video is muted for autoplay to work
+        video.muted = true;
+        video.play().catch(err => {
+          console.log("Autoplay error:", err);
+        });
       }
-      
-      // Create handler functions
-      const handleLoadError = (e: Event) => {
-        console.log("Microsoft Hololens video load error, attempting fix");
-        const video = e.target as HTMLVideoElement;
-        video.src = HOLOLENS_VIDEO_URL;
-        video.load();
-        video.play().catch(err => console.error("Failed to play after fixing src:", err));
-      };
-      
-      // Add event listeners
-      hololensVideo.addEventListener('error', handleLoadError);
-      
-      // Manually trigger load and play
-      hololensVideo.load();
-      hololensVideo.play().catch(err => {
-        console.error("Initial Hololens video play failed:", err);
-        
-        // Try playing again after a delay
-        setTimeout(() => {
-          hololensVideo.play().catch(e => console.error("Delayed Hololens play failed:", e));
-        }, 2000);
-      });
-      
-      // Cleanup event listeners
-      return () => {
-        hololensVideo.removeEventListener('error', handleLoadError);
-      };
-    }
-  }, [videoRefs]);
+    });
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || isVerticalView || isHovered) return;
@@ -395,37 +379,6 @@ const VideoCarousel = () => {
     }
   };
 
-  // Enhanced error handling function for video loading issues
-  const handleVideoError = (video: HTMLVideoElement, index: number) => {
-    console.error(`Error loading video at index ${index}, attempting recovery`);
-    
-    // Try reloading the video
-    video.load();
-    
-    // Attempt playback again after a short delay
-    setTimeout(() => {
-      video.play().catch(e => {
-        console.error(`Recovery attempt failed for video ${index}:`, e);
-        // Update UI to show error state if needed
-      });
-    }, 2000);
-  };
-
-  // Add special handling for problematic videos
-  useEffect(() => {
-    videoRefs.current.forEach((video, index) => {
-      if (!video) return;
-      
-      // Add error event listener
-      const errorHandler = () => handleVideoError(video, index);
-      video.addEventListener('error', errorHandler);
-      
-      return () => {
-        video.removeEventListener('error', errorHandler);
-      };
-    });
-  }, []);
-
   return (
     <section 
       className="w-full py-6 sm:py-12"
@@ -475,36 +428,20 @@ const VideoCarousel = () => {
                 muted
                 loop
                 onError={(e) => {
-                  console.error(`Video load error for ${video.src}`, e);
-                  
-                  // Special handling for Microsoft Hololens video
-                  if (video.src.includes('Hololens') || video.src.includes('hololens')) {
-                    console.log("Attempting to fix Microsoft Hololens video...");
-                    // Force reload with correct path
-                    const videoEl = e.currentTarget;
-                    videoEl.src = HOLOLENS_VIDEO_URL;
-                    videoEl.load();
-                    videoEl.play().catch(err => console.log("Retry play failed", err));
+                  const target = e.target as HTMLVideoElement;
+                  // Try fallback if available
+                  if (video.fallbackSrc && target.src !== video.fallbackSrc) {
+                    console.log(`Trying fallback for video ${index}`);
+                    target.src = video.fallbackSrc;
+                    target.load();
                   }
                 }}
-                onCanPlay={(e) => {
-                  e.currentTarget.play().catch(err => 
-                    console.log("Play attempt on canplay failed:", err)
-                  );
-                }}
-                onLoadedData={(e) => {
-                  e.currentTarget.play().catch(err => 
-                    console.log("Play attempt on loadeddata failed:", err)
-                  );
-                }}
-                onPlay={() => {
-                  setPlayingStates(prev => {
-                    const newStates = [...prev];
-                    newStates[index] = true;
-                    return newStates;
-                  });
-                }}
               />
+              {videoLoadErrors[index] && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white text-center p-4">
+                  <p>Sorry, this video could not be loaded.</p>
+                </div>
+              )}
               {isVerticalView && (
                 <div 
                   className="absolute inset-0 flex flex-col items-center justify-center gap-4 opacity-0 hover:opacity-100 transition-opacity duration-200"
@@ -563,27 +500,12 @@ const VideoCarousel = () => {
                 muted
                 loop
                 onError={(e) => {
-                  console.error(`Duplicate video load error for ${video.src}`, e);
-                  
-                  // Special handling for Microsoft Hololens video in duplicates
-                  if (video.src.includes('Hololens') || video.src.includes('hololens')) {
-                    console.log("Attempting to fix Microsoft Hololens duplicate video...");
-                    // Force reload with correct path
-                    const videoEl = e.currentTarget;
-                    videoEl.src = HOLOLENS_VIDEO_URL;
-                    videoEl.load();
-                    videoEl.play().catch(err => console.log("Retry play failed", err));
+                  const target = e.target as HTMLVideoElement;
+                  // Try fallback if available
+                  if (video.fallbackSrc && target.src !== video.fallbackSrc) {
+                    target.src = video.fallbackSrc;
+                    target.load();
                   }
-                }}
-                onCanPlay={(e) => {
-                  e.currentTarget.play().catch(err => 
-                    console.log("Duplicate video play attempt failed:", err)
-                  );
-                }}
-                onLoadedData={(e) => {
-                  e.currentTarget.play().catch(err => 
-                    console.log("Duplicate video loadeddata play failed:", err)
-                  );
                 }}
               />
             </div>
