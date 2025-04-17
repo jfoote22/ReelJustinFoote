@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, RotateCcw, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image";
 
 // Create a fallback mechanism for file paths
 const getVideoSrc = (primaryPath: string, fallbackPath?: string) => {
@@ -10,6 +11,9 @@ const getVideoSrc = (primaryPath: string, fallbackPath?: string) => {
   // It will be replaced with the primary path in the client
   return primaryPath;
 };
+
+// Manual fix for Microsoft Hololens video - hard-coded path
+const HOLOLENS_VIDEO_URL = '/video_reels/MicrosoftHololensLogoTrim.mp4';
 
 // Directly reference both versions of the filename to handle caching issues
 const videos = [
@@ -34,7 +38,7 @@ const videos = [
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg'
   },
   {
-    src: '/video_reels/MicrosoftHololensLogoTrim.mp4',
+    src: HOLOLENS_VIDEO_URL,  // Use the constant
     thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg'
   },
   {
@@ -137,6 +141,50 @@ const VideoCarousel = () => {
       clearTimeout(t2);
     };
   }, []);
+
+  // Special handling for Microsoft Hololens video (index 5)
+  useEffect(() => {
+    // Focus on the Microsoft Hololens video
+    const hololensVideoIndex = 5; // Index in the videos array
+    const hololensVideo = videoRefs.current[hololensVideoIndex];
+    
+    if (hololensVideo) {
+      console.log("Setting up special handling for Microsoft Hololens video");
+      
+      // Ensure the src is correct
+      if (hololensVideo.src !== HOLOLENS_VIDEO_URL) {
+        hololensVideo.src = HOLOLENS_VIDEO_URL;
+      }
+      
+      // Create handler functions
+      const handleLoadError = (e: Event) => {
+        console.log("Microsoft Hololens video load error, attempting fix");
+        const video = e.target as HTMLVideoElement;
+        video.src = HOLOLENS_VIDEO_URL;
+        video.load();
+        video.play().catch(err => console.error("Failed to play after fixing src:", err));
+      };
+      
+      // Add event listeners
+      hololensVideo.addEventListener('error', handleLoadError);
+      
+      // Manually trigger load and play
+      hololensVideo.load();
+      hololensVideo.play().catch(err => {
+        console.error("Initial Hololens video play failed:", err);
+        
+        // Try playing again after a delay
+        setTimeout(() => {
+          hololensVideo.play().catch(e => console.error("Delayed Hololens play failed:", e));
+        }, 2000);
+      });
+      
+      // Cleanup event listeners
+      return () => {
+        hololensVideo.removeEventListener('error', handleLoadError);
+      };
+    }
+  }, [videoRefs]);
 
   useEffect(() => {
     if (!containerRef.current || isVerticalView || isHovered) return;
@@ -415,6 +463,16 @@ const VideoCarousel = () => {
                 loop
                 onError={(e) => {
                   console.error(`Video load error for ${video.src}`, e);
+                  
+                  // Special handling for Microsoft Hololens video
+                  if (video.src.includes('Hololens') || video.src.includes('hololens')) {
+                    console.log("Attempting to fix Microsoft Hololens video...");
+                    // Force reload with correct path
+                    const videoEl = e.currentTarget;
+                    videoEl.src = HOLOLENS_VIDEO_URL;
+                    videoEl.load();
+                    videoEl.play().catch(err => console.log("Retry play failed", err));
+                  }
                 }}
                 onCanPlay={(e) => {
                   e.currentTarget.play().catch(err => 
@@ -493,6 +551,16 @@ const VideoCarousel = () => {
                 loop
                 onError={(e) => {
                   console.error(`Duplicate video load error for ${video.src}`, e);
+                  
+                  // Special handling for Microsoft Hololens video in duplicates
+                  if (video.src.includes('Hololens') || video.src.includes('hololens')) {
+                    console.log("Attempting to fix Microsoft Hololens duplicate video...");
+                    // Force reload with correct path
+                    const videoEl = e.currentTarget;
+                    videoEl.src = HOLOLENS_VIDEO_URL;
+                    videoEl.load();
+                    videoEl.play().catch(err => console.log("Retry play failed", err));
+                  }
                 }}
                 onCanPlay={(e) => {
                   e.currentTarget.play().catch(err => 
