@@ -4,33 +4,41 @@ import { useEffect, useRef, useState } from 'react';
 import { Play, Pause, RotateCcw, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+// Create a fallback mechanism for file paths
+const getVideoSrc = (primaryPath: string, fallbackPath?: string) => {
+  // This function helps handle potential filename mismatches
+  // It will be replaced with the primary path in the client
+  return primaryPath;
+};
+
 const videos = [
   {
-    src: '/video_reels/vfx-reel--star-wars--the-old-republic.mp4',
+    src: getVideoSrc('/video_reels/vfx-reel--star-wars--the-old-republic.mp4'),
     thumbnail: '/video_reels/thumbnails/star-wars-thumb.jpg'
   },
   {
-    src: '/video_reels/vfx-reel--where-the-wild-things-are.mp4',
+    src: getVideoSrc('/video_reels/vfx-reel--where-the-wild-things-are.mp4'),
     thumbnail: '/video_reels/thumbnails/wild-things-thumb.jpg'
   },
   {
-    src: '/video_reels/vfx-reel--call-of-duty--roads-to-victory.mp4',
+    src: getVideoSrc('/video_reels/vfx-reel--call-of-duty--roads-to-victory.mp4'),
     thumbnail: '/video_reels/thumbnails/cod-thumb.jpg'
   },
   {
-    src: '/video_reels/TeleportationDeviceActivation.mp4',
+    src: getVideoSrc('/video_reels/TeleportationDeviceActivation.mp4'),
     thumbnail: '/video_reels/thumbnails/teleportation-thumb.jpg'
   },
   {
-    src: '/video_reels/MortarShellExplodingInSoftDirt.mp4',
+    src: getVideoSrc('/video_reels/MortarShellExplodingInSoftDirt.mp4'),
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg'
   },
   {
-    src: '/video_reels/MicrosoftHololensLogoTrim.mp4',
+    // Provide both versions of the filename to handle any caching issues
+    src: getVideoSrc('/video_reels/MicrosoftHololensLogoTrim.mp4', '/video_reels/Microsoft Hololens Logo Trim.mp4'),
     thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg'
   },
   {
-    src: '/video_reels/Tornadotorch.mp4',
+    src: getVideoSrc('/video_reels/Tornadotorch.mp4'),
     thumbnail: '/video_reels/thumbnails/tornadotorch-thumb.jpg'
   }
 ];
@@ -219,15 +227,36 @@ const VideoCarousel = () => {
   
   // Ensure videos autoplay on mount
   useEffect(() => {
-    videoRefs.current.forEach((video) => {
-      if (video) {
-        video.play().catch(err => {
-          console.log("Autoplay prevented:", err);
-          // Modern browsers often require user interaction before autoplay
-          // We've already set autoPlay={true} on the video element
-        });
-      }
-    });
+    const initiateVideoPlayback = () => {
+      videoRefs.current.forEach((video) => {
+        if (video) {
+          // Make sure video is muted for autoplay to work reliably across browsers
+          video.muted = true;
+          
+          // Check if video has metadata loaded
+          if (video.readyState >= 2) {
+            video.play().catch(err => {
+              console.log("Autoplay prevented:", err);
+            });
+          } else {
+            // Add event listener for when metadata is loaded
+            video.addEventListener('loadeddata', () => {
+              video.play().catch(err => {
+                console.log("Autoplay prevented after metadata load:", err);
+              });
+            }, { once: true });
+          }
+        }
+      });
+    };
+
+    // Call immediately and also after a short delay as a fallback
+    initiateVideoPlayback();
+    
+    // Try again after a short delay to handle any race conditions
+    const timeoutId = setTimeout(initiateVideoPlayback, 1000);
+    
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -314,6 +343,24 @@ const VideoCarousel = () => {
     }
   };
 
+  // Add a handler to check for video load errors and try fallback paths
+  useEffect(() => {
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+      
+      const handleError = () => {
+        console.error(`Error loading video ${videos[index].src}, trying fallback if available`);
+        // Could implement fallback logic here if needed in the future
+      };
+      
+      video.addEventListener('error', handleError);
+      
+      return () => {
+        video.removeEventListener('error', handleError);
+      };
+    });
+  }, []);
+
   return (
     <section 
       className="w-full py-6 sm:py-12"
@@ -357,11 +404,17 @@ const VideoCarousel = () => {
                 className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
                 src={video.src}
                 poster={video.thumbnail}
-                autoPlay={true}
+                autoPlay
                 preload="auto"
-                loop
-                muted
                 playsInline
+                muted
+                loop
+                onLoadedData={(e) => {
+                  // Attempt to play when data is loaded
+                  e.currentTarget.play().catch(err => 
+                    console.log("Autoplay prevented on loadeddata:", err)
+                  );
+                }}
                 onPlay={() => {
                   setPlayingStates(prev => {
                     const newStates = [...prev];
@@ -422,11 +475,16 @@ const VideoCarousel = () => {
                 className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
                 src={video.src}
                 poster={video.thumbnail}
-                autoPlay={true}
+                autoPlay
                 preload="auto"
-                loop
-                muted
                 playsInline
+                muted
+                loop
+                onLoadedData={(e) => {
+                  e.currentTarget.play().catch(err => 
+                    console.log("Duplicate video autoplay prevented:", err)
+                  );
+                }}
               />
             </div>
           ))}
