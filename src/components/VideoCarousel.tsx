@@ -31,9 +31,21 @@ export const videos: VideoItem[] = [
   },
   {
     src: '/video_reels/vfx-reel--call-of-duty--roads-to-victory.mp4',
-    thumbnail: '/video_reels/thumbnails/cod-thumb.jpg',
+    thumbnail: '/video_reels/thumbnails/cod2-thumb.jpg',
     type: 'youtube',
     videoId: 'O9vNye383zw'
+  },
+  {
+    src: '/video_reels/destiny-effects.mp4',
+    thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg',
+    type: 'youtube',
+    videoId: 'ie3wRVpzd8o'
+  },
+  {
+    src: '/video_reels/Tornadotorch.mp4',
+    thumbnail: '/video_reels/thumbnails/tornadotorch-thumb.jpg',
+    type: 'youtube',
+    videoId: '3L3A2zv5v34'
   },
   {
     src: '/video_reels/TeleportationDeviceActivation.mp4',
@@ -46,18 +58,6 @@ export const videos: VideoItem[] = [
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg',
     type: 'youtube',
     videoId: '2ComkznaI9o'
-  },
-  {
-    src: '/video_reels/Tornadotorch.mp4',
-    thumbnail: '/video_reels/thumbnails/tornadotorch-thumb.jpg',
-    type: 'youtube',
-    videoId: '3L3A2zv5v34'
-  },
-  {
-    src: '/video_reels/destiny-effects.mp4',
-    thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg',
-    type: 'youtube',
-    videoId: 'ie3wRVpzd8o'
   },
   {
     src: '/video_reels/mass-effect-andromeda.mp4',
