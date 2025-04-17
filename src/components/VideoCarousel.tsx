@@ -429,7 +429,6 @@ const VideoCarousel = () => {
     <section 
       className="w-full py-6 sm:py-12"
     >
-      <h2 className="text-xl sm:text-2xl font-light tracking-wide mb-4 sm:mb-6">PREVIOUS WORK</h2>
       <div 
         ref={containerRef}
         className={`relative w-full ${isVerticalView ? '' : 'overflow-x-auto scrollbar-hide'}`}
