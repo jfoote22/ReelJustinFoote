@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Play, Pause, RotateCcw, RefreshCw } from "lucide-react"
+import { Play, Pause, RotateCcw, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image";
 import YouTubeEmbed from './youtube-embed';
@@ -79,6 +79,7 @@ const VideoCarousel = () => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasMoved, setHasMoved] = useState(false);
   const [videoLoadErrors, setVideoLoadErrors] = useState<boolean[]>(new Array(videos.length).fill(false));
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // Function to generate thumbnails
   useEffect(() => {
@@ -425,209 +426,274 @@ const VideoCarousel = () => {
     }
   };
 
+  // Add scroll position tracking
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || isVerticalView) return;
+    
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const scrollWidth = container.scrollWidth - container.clientWidth;
+      const progress = scrollLeft / scrollWidth;
+      setScrollProgress(progress);
+    };
+    
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [isVerticalView]);
+  
+  // Add scroll controls
+  const scrollCarouselLeft = () => {
+    if (!containerRef.current || isVerticalView) return;
+    containerRef.current.scrollBy({ left: -500, behavior: 'smooth' });
+  };
+  
+  const scrollCarouselRight = () => {
+    if (!containerRef.current || isVerticalView) return;
+    containerRef.current.scrollBy({ left: 500, behavior: 'smooth' });
+  };
+
   return (
     <section 
       className="w-full py-6 sm:py-12"
     >
-      <div 
-        ref={containerRef}
-        className={`relative w-full ${isVerticalView ? '' : 'overflow-x-auto scrollbar-hide'}`}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={(e) => {
-          setIsHovered(false);
-          handleMouseUp(e);
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        style={{ 
-          cursor: isDragging ? 'grabbing' : 'grab',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
-        }}
-      >
-        <style jsx global>{`
-          /* Hide scrollbar for Chrome, Safari and Opera */
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-          
-          /* Hide scrollbar for IE, Edge and Firefox */
-          .scrollbar-hide {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-          }
-        `}</style>
+      <div className="relative">
         <div 
-          className={`${isVerticalView ? 'flex flex-col gap-4 sm:gap-8 px-4 sm:px-8' : 'flex gap-2 sm:gap-4 px-4 sm:px-8'}`}
+          ref={containerRef}
+          className={`relative w-full ${isVerticalView ? '' : 'overflow-x-auto scrollbar-hide'}`}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={(e) => {
+            setIsHovered(false);
+            handleMouseUp(e);
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          style={{ 
+            cursor: isDragging ? 'grabbing' : 'grab',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
         >
-          {videos.map((video, index) => (
-            <div 
-              key={index} 
-              className={`${
-                isVerticalView 
-                  ? 'w-full h-auto aspect-video md:aspect-[16/9] lg:aspect-[16/9] transition-all duration-500' 
-                  : 'min-w-[280px] sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px] h-[157px] sm:h-[225px] md:h-[281px] lg:h-[337px] cursor-pointer'
-              } relative bg-gray-900 rounded-md overflow-hidden border-[2px] sm:border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite]`}
-            >
-              {videoLoadErrors[index] ? (
-                <div className="absolute inset-0 flex items-center justify-center bg-black">
-                  <Image 
-                    src={video.thumbnail} 
-                    alt="Video thumbnail" 
-                    width={600} 
-                    height={337} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                    <p className="text-white text-center p-4">Video could not be loaded</p>
+          <style jsx global>{`
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+            }
+            
+            /* Hide scrollbar for IE, Edge and Firefox */
+            .scrollbar-hide {
+              -ms-overflow-style: none;  /* IE and Edge */
+              scrollbar-width: none;  /* Firefox */
+            }
+          `}</style>
+          <div 
+            className={`${isVerticalView ? 'flex flex-col gap-4 sm:gap-8 px-4 sm:px-8' : 'flex gap-2 sm:gap-4 px-4 sm:px-8'}`}
+          >
+            {videos.map((video, index) => (
+              <div 
+                key={index} 
+                className={`${
+                  isVerticalView 
+                    ? 'w-full h-auto aspect-video md:aspect-[16/9] lg:aspect-[16/9] transition-all duration-500' 
+                    : 'min-w-[280px] sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px] h-[157px] sm:h-[225px] md:h-[281px] lg:h-[337px] cursor-pointer'
+                } relative bg-gray-900 rounded-md overflow-hidden border-[2px] sm:border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite]`}
+              >
+                {videoLoadErrors[index] ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black">
+                    <Image 
+                      src={video.thumbnail} 
+                      alt="Video thumbnail" 
+                      width={600} 
+                      height={337} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                      <p className="text-white text-center p-4">Video could not be loaded</p>
+                    </div>
                   </div>
-                </div>
-              ) : video.type === 'youtube' ? (
-                <div className={`w-full ${isVerticalView ? 'h-full' : 'h-full'}`}>
-                  <YouTubeEmbed
-                    videoId={video.videoId as string}
-                    title={`Video ${index + 1}`}
-                    autoplay={isVerticalView || playingStates[index]}
-                    showControls={true}
+                ) : video.type === 'youtube' ? (
+                  <div className={`w-full ${isVerticalView ? 'h-full' : 'h-full'}`}>
+                    <YouTubeEmbed
+                      videoId={video.videoId as string}
+                      title={`Video ${index + 1}`}
+                      autoplay={isVerticalView || playingStates[index]}
+                      showControls={true}
+                    />
+                  </div>
+                ) : (
+                  <video
+                    ref={(el) => {
+                      videoRefs.current[index] = el;
+                    }}
+                    style={{
+                      objectFit: 'cover',
+                    }}
+                    className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
+                    src={video.src}
+                    poster={video.thumbnail}
+                    autoPlay
+                    preload="auto"
+                    playsInline
+                    muted
+                    loop
+                    onError={(e) => {
+                      const target = e.target as HTMLVideoElement;
+                      // Try fallback if available
+                      if (video.fallbackSrc && target.src !== video.fallbackSrc) {
+                        console.log(`Trying fallback for video ${index}`);
+                        target.src = video.fallbackSrc;
+                        target.load();
+                      }
+                    }}
                   />
-                </div>
-              ) : (
-                <video
-                  ref={(el) => {
-                    videoRefs.current[index] = el;
-                  }}
-                  style={{
-                    objectFit: 'cover',
-                  }}
-                  className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
-                  src={video.src}
-                  poster={video.thumbnail}
-                  autoPlay
-                  preload="auto"
-                  playsInline
-                  muted
-                  loop
-                  onError={(e) => {
-                    const target = e.target as HTMLVideoElement;
-                    // Try fallback if available
-                    if (video.fallbackSrc && target.src !== video.fallbackSrc) {
-                      console.log(`Trying fallback for video ${index}`);
-                      target.src = video.fallbackSrc;
-                      target.load();
-                    }
-                  }}
-                />
-              )}
-              {videoLoadErrors[index] && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white text-center p-4">
-                  <p>Sorry, this video could not be loaded.</p>
-                </div>
-              )}
-              {isVerticalView && (
-                <div 
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 opacity-0 hover:opacity-100 transition-opacity duration-200"
-                  onClick={(e) => e.stopPropagation()} // Prevent collapse when clicking controls
-                >
-                  {!videoLoadErrors[index] && video.type !== 'youtube' && (
-                    <>
-                      <Button 
-                        size="icon" 
-                        variant="outline"
-                        onClick={() => togglePlay(index)}
-                        className="w-14 h-14 sm:w-20 sm:h-20 rounded-full border-2 border-white bg-black/30 text-white hover:bg-white hover:text-black transition-colors"
-                      >
-                        {playingStates[index] ? (
-                          <Pause className="h-7 w-7 sm:h-10 sm:w-10 fill-current" />
-                        ) : (
-                          <Play className="h-7 w-7 sm:h-10 sm:w-10 fill-current" />
-                        )}
-                        <span className="sr-only">{playingStates[index] ? "Pause" : "Play"} video</span>
-                      </Button>
-                      <div className="flex gap-4">
+                )}
+                {videoLoadErrors[index] && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-white text-center p-4">
+                    <p>Sorry, this video could not be loaded.</p>
+                  </div>
+                )}
+                {isVerticalView && (
+                  <div 
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-4 opacity-0 hover:opacity-100 transition-opacity duration-200"
+                    onClick={(e) => e.stopPropagation()} // Prevent collapse when clicking controls
+                  >
+                    {!videoLoadErrors[index] && video.type !== 'youtube' && (
+                      <>
                         <Button 
                           size="icon" 
                           variant="outline"
-                          onClick={() => rewindTenSeconds(index)}
-                          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white bg-black/30 text-white hover:bg-white hover:text-black transition-colors"
+                          onClick={() => togglePlay(index)}
+                          className="w-14 h-14 sm:w-20 sm:h-20 rounded-full border-2 border-white bg-black/30 text-white hover:bg-white hover:text-black transition-colors"
                         >
-                          <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
-                          <span className="sr-only">Rewind 10 seconds</span>
+                          {playingStates[index] ? (
+                            <Pause className="h-7 w-7 sm:h-10 sm:w-10 fill-current" />
+                          ) : (
+                            <Play className="h-7 w-7 sm:h-10 sm:w-10 fill-current" />
+                          )}
+                          <span className="sr-only">{playingStates[index] ? "Pause" : "Play"} video</span>
                         </Button>
-                        <Button 
-                          size="icon"
-                          variant="outline"
-                          onClick={() => restartVideo(index)}
-                          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white bg-black/30 text-white hover:bg-white hover:text-black transition-colors"
-                        >
-                          <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6" />
-                          <span className="sr-only">Restart video</span>
-                        </Button>
+                        <div className="flex gap-4">
+                          <Button 
+                            size="icon" 
+                            variant="outline"
+                            onClick={() => rewindTenSeconds(index)}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white bg-black/30 text-white hover:bg-white hover:text-black transition-colors"
+                          >
+                            <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
+                            <span className="sr-only">Rewind 10 seconds</span>
+                          </Button>
+                          <Button 
+                            size="icon"
+                            variant="outline"
+                            onClick={() => restartVideo(index)}
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white bg-black/30 text-white hover:bg-white hover:text-black transition-colors"
+                          >
+                            <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6" />
+                            <span className="sr-only">Restart video</span>
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                    {!videoLoadErrors[index] && video.type === 'youtube' && (
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <div className="py-2 px-3 bg-red-600 rounded-lg shadow-md flex items-center gap-2">
+                          <svg 
+                            className="w-5 h-5 sm:w-6 sm:h-6" 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            viewBox="0 0 24 24" 
+                            fill="currentColor"
+                          >
+                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                          </svg>
+                          <span className="text-white font-semibold text-sm sm:text-base">YouTube Controls Available</span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-white bg-black/60 px-2 py-1 rounded">Click on video to access controls</p>
                       </div>
-                    </>
-                  )}
-                  {!videoLoadErrors[index] && video.type === 'youtube' && (
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="py-2 px-3 bg-red-600 rounded-lg shadow-md flex items-center gap-2">
-                        <svg 
-                          className="w-5 h-5 sm:w-6 sm:h-6" 
-                          xmlns="http://www.w3.org/2000/svg" 
-                          viewBox="0 0 24 24" 
-                          fill="currentColor"
-                        >
-                          <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-                        </svg>
-                        <span className="text-white font-semibold text-sm sm:text-base">YouTube Controls Available</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-white bg-black/60 px-2 py-1 rounded">Click on video to access controls</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-          {/* Duplicate videos for seamless loop - only show in horizontal mode */}
-          {!isVerticalView && videos.slice(0, 2).map((video, index) => (
-            <div 
-              key={`duplicate-${index}`} 
-              className="min-w-[280px] sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px] h-[157px] sm:h-[225px] md:h-[281px] lg:h-[337px] bg-gray-900 rounded-md overflow-hidden border-[2px] sm:border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite]"
-            >
-              {video.type === 'youtube' ? (
-                <div className="w-full h-full">
-                  <YouTubeEmbed
-                    videoId={video.videoId as string}
-                    title={`Duplicate ${index + 1}`}
-                    autoplay={false}
-                    loop={true}
-                    showControls={true}
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            {/* Duplicate videos for seamless loop - only show in horizontal mode */}
+            {!isVerticalView && videos.slice(0, 2).map((video, index) => (
+              <div 
+                key={`duplicate-${index}`} 
+                className="min-w-[280px] sm:min-w-[400px] md:min-w-[500px] lg:min-w-[600px] h-[157px] sm:h-[225px] md:h-[281px] lg:h-[337px] bg-gray-900 rounded-md overflow-hidden border-[2px] sm:border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite]"
+              >
+                {video.type === 'youtube' ? (
+                  <div className="w-full h-full">
+                    <YouTubeEmbed
+                      videoId={video.videoId as string}
+                      title={`Duplicate ${index + 1}`}
+                      autoplay={false}
+                      loop={true}
+                      showControls={true}
+                    />
+                  </div>
+                ) : (
+                  <video
+                    className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
+                    src={video.src}
+                    poster={video.thumbnail}
+                    autoPlay
+                    preload="auto"
+                    playsInline
+                    muted
+                    loop
+                    onError={(e) => {
+                      const target = e.target as HTMLVideoElement;
+                      // Try fallback if available
+                      if (video.fallbackSrc && target.src !== video.fallbackSrc) {
+                        target.src = video.fallbackSrc;
+                        target.load();
+                      }
+                    }}
                   />
-                </div>
-              ) : (
-                <video
-                  className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
-                  src={video.src}
-                  poster={video.thumbnail}
-                  autoPlay
-                  preload="auto"
-                  playsInline
-                  muted
-                  loop
-                  onError={(e) => {
-                    const target = e.target as HTMLVideoElement;
-                    // Try fallback if available
-                    if (video.fallbackSrc && target.src !== video.fallbackSrc) {
-                      target.src = video.fallbackSrc;
-                      target.load();
-                    }
-                  }}
-                />
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            ))}
+          </div>
         </div>
+        
+        {!isVerticalView && (
+          <div className="mt-4 px-4 sm:px-8">
+            <div className="flex items-center gap-2">
+              {/* Left scroll button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={scrollCarouselLeft}
+                className="h-8 w-8 rounded-full border border-gray-600 bg-black/50 hover:bg-white/10"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span className="sr-only">Scroll left</span>
+              </Button>
+              
+              {/* Progress bar */}
+              <div className="relative flex-1 h-2 bg-gray-800 rounded overflow-hidden">
+                <div 
+                  className="absolute top-0 left-0 h-full bg-gray-400 rounded transition-all duration-150 ease-out"
+                  style={{ width: `${scrollProgress * 100}%` }}
+                />
+              </div>
+              
+              {/* Right scroll button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={scrollCarouselRight}
+                className="h-8 w-8 rounded-full border border-gray-600 bg-black/50 hover:bg-white/10"
+              >
+                <ChevronRight className="h-5 w-5" />
+                <span className="sr-only">Scroll right</span>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
