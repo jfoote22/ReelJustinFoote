@@ -69,7 +69,8 @@ export default function Home() {
 
       <main className="pt-[calc(20vh+200px)] sm:pt-[calc(25vh+250px)] pb-16 relative z-10">
         <section id="reels" className="container mx-auto px-4 md:px-6 max-w-7xl">
-          {/* Featured Reel */}
+          {/* Hidden components (commented out for now) */}
+          {/* 
           <div className="mb-12">
             <h2 className="text-2xl font-light mb-6 tracking-wide">LATEST TECHNICAL VFX WORK</h2>
             <VideoPlayer 
@@ -79,7 +80,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Previous Work */}
           <div className="mb-12">
             <h2 className="text-2xl font-light mb-6 tracking-wide">LATEST IN-GAME VFX WORK</h2>
             <VideoPlayer 
@@ -89,12 +89,10 @@ export default function Home() {
             />
           </div>
 
-          {/* Older Reels */}
           <div className="mb-16">
             <VideoCarousel />
           </div>
 
-          {/* About Section */}
           <section id="about" className="mb-16">
             <h2 className="text-2xl font-light mb-8 tracking-wide">ABOUT</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -129,8 +127,9 @@ export default function Home() {
               </div>
             </div>
           </section>
+          */}
 
-          {/* Contact Section */}
+          {/* Contact Section - Kept visible as requested */}
           <section id="contact" className="text-center">
             <h2 className="text-xl sm:text-2xl font-light mb-6 tracking-wide">CONTACT</h2>
             <p className="text-base sm:text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
