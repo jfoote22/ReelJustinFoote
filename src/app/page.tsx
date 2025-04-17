@@ -79,7 +79,9 @@ export default function Home() {
               videoSrc="/video_reels/Tools_Combined.mp4"
             />
           </div>
+          */}
 
+          {/* Latest In-Game VFX Work - Unhidden */}
           <div className="mb-12">
             <h2 className="text-2xl font-light mb-6 tracking-wide">LATEST IN-GAME VFX WORK</h2>
             <VideoPlayer 
@@ -89,6 +91,7 @@ export default function Home() {
             />
           </div>
 
+          {/* 
           <div className="mb-16">
             <VideoCarousel />
           </div>
