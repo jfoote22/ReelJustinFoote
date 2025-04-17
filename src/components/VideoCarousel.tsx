@@ -11,34 +11,34 @@ const getVideoSrc = (primaryPath: string, fallbackPath?: string) => {
   return primaryPath;
 };
 
+// Directly reference both versions of the filename to handle caching issues
 const videos = [
   {
-    src: getVideoSrc('/video_reels/vfx-reel--star-wars--the-old-republic.mp4'),
+    src: '/video_reels/vfx-reel--star-wars--the-old-republic.mp4',
     thumbnail: '/video_reels/thumbnails/star-wars-thumb.jpg'
   },
   {
-    src: getVideoSrc('/video_reels/vfx-reel--where-the-wild-things-are.mp4'),
+    src: '/video_reels/vfx-reel--where-the-wild-things-are.mp4',
     thumbnail: '/video_reels/thumbnails/wild-things-thumb.jpg'
   },
   {
-    src: getVideoSrc('/video_reels/vfx-reel--call-of-duty--roads-to-victory.mp4'),
+    src: '/video_reels/vfx-reel--call-of-duty--roads-to-victory.mp4',
     thumbnail: '/video_reels/thumbnails/cod-thumb.jpg'
   },
   {
-    src: getVideoSrc('/video_reels/TeleportationDeviceActivation.mp4'),
+    src: '/video_reels/TeleportationDeviceActivation.mp4',
     thumbnail: '/video_reels/thumbnails/teleportation-thumb.jpg'
   },
   {
-    src: getVideoSrc('/video_reels/MortarShellExplodingInSoftDirt.mp4'),
+    src: '/video_reels/MortarShellExplodingInSoftDirt.mp4',
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg'
   },
   {
-    // Provide both versions of the filename to handle any caching issues
-    src: getVideoSrc('/video_reels/MicrosoftHololensLogoTrim.mp4', '/video_reels/Microsoft Hololens Logo Trim.mp4'),
+    src: '/video_reels/Microsoft Hololens Logo Trim.mp4',
     thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg'
   },
   {
-    src: getVideoSrc('/video_reels/Tornadotorch.mp4'),
+    src: '/video_reels/Tornadotorch.mp4',
     thumbnail: '/video_reels/thumbnails/tornadotorch-thumb.jpg'
   }
 ];
@@ -99,6 +99,44 @@ const VideoCarousel = () => {
       generateThumbnails();
     }
   }, [thumbnailsGenerated]);
+
+  // Enhanced autoplay functionality
+  useEffect(() => {
+    const initiatePlayback = () => {
+      videoRefs.current.forEach((video) => {
+        if (video) {
+          // Make sure video is muted for autoplay to work
+          video.muted = true;
+          
+          try {
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                console.log("Autoplay prevented, attempting again...", error);
+                
+                // Try a different approach
+                setTimeout(() => {
+                  video.play().catch(e => console.log("Second attempt failed:", e));
+                }, 1000);
+              });
+            }
+          } catch (err) {
+            console.error("Error trying to play video:", err);
+          }
+        }
+      });
+    };
+
+    // Try to initiate playback multiple times
+    initiatePlayback();
+    const t1 = setTimeout(initiatePlayback, 1000);
+    const t2 = setTimeout(initiatePlayback, 3000);
+    
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current || isVerticalView || isHovered) return;
@@ -224,40 +262,6 @@ const VideoCarousel = () => {
       };
     });
   }, [isVerticalView]); // Re-run when view changes
-  
-  // Ensure videos autoplay on mount
-  useEffect(() => {
-    const initiateVideoPlayback = () => {
-      videoRefs.current.forEach((video) => {
-        if (video) {
-          // Make sure video is muted for autoplay to work reliably across browsers
-          video.muted = true;
-          
-          // Check if video has metadata loaded
-          if (video.readyState >= 2) {
-            video.play().catch(err => {
-              console.log("Autoplay prevented:", err);
-            });
-          } else {
-            // Add event listener for when metadata is loaded
-            video.addEventListener('loadeddata', () => {
-              video.play().catch(err => {
-                console.log("Autoplay prevented after metadata load:", err);
-              });
-            }, { once: true });
-          }
-        }
-      });
-    };
-
-    // Call immediately and also after a short delay as a fallback
-    initiateVideoPlayback();
-    
-    // Try again after a short delay to handle any race conditions
-    const timeoutId = setTimeout(initiateVideoPlayback, 1000);
-    
-    return () => clearTimeout(timeoutId);
-  }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (isVerticalView) return;
@@ -409,10 +413,17 @@ const VideoCarousel = () => {
                 playsInline
                 muted
                 loop
-                onLoadedData={(e) => {
-                  // Attempt to play when data is loaded
+                onError={(e) => {
+                  console.error(`Video load error for ${video.src}`, e);
+                }}
+                onCanPlay={(e) => {
                   e.currentTarget.play().catch(err => 
-                    console.log("Autoplay prevented on loadeddata:", err)
+                    console.log("Play attempt on canplay failed:", err)
+                  );
+                }}
+                onLoadedData={(e) => {
+                  e.currentTarget.play().catch(err => 
+                    console.log("Play attempt on loadeddata failed:", err)
                   );
                 }}
                 onPlay={() => {
@@ -480,9 +491,17 @@ const VideoCarousel = () => {
                 playsInline
                 muted
                 loop
+                onError={(e) => {
+                  console.error(`Duplicate video load error for ${video.src}`, e);
+                }}
+                onCanPlay={(e) => {
+                  e.currentTarget.play().catch(err => 
+                    console.log("Duplicate video play attempt failed:", err)
+                  );
+                }}
                 onLoadedData={(e) => {
                   e.currentTarget.play().catch(err => 
-                    console.log("Duplicate video autoplay prevented:", err)
+                    console.log("Duplicate video loadeddata play failed:", err)
                   );
                 }}
               />
