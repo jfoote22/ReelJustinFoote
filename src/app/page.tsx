@@ -81,7 +81,7 @@ export default function Home() {
                 <YouTubeEmbed 
                   videoId="OvgfweQ6mr4" 
                   title="Justin Foote Technical VFX Reel" 
-                  autoplay={false}
+                  autoplay={true}
                   loop={true}
                 />
               </div>
@@ -91,7 +91,7 @@ export default function Home() {
                 <YouTubeEmbed 
                   videoId="Byraswh5Rk8" 
                   title="Justin Foote In-Game VFX Reel"
-                  autoplay={false}
+                  autoplay={true}
                   loop={true}
                 />
               </div>
