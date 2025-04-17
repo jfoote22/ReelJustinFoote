@@ -12,6 +12,7 @@ import VideoPlayer from "@/components/video-player"
 import PDFModal from "@/components/pdf-modal"
 import VideoCarousel from "@/components/VideoCarousel"
 import PDFEmbed from "@/components/pdf-embed"
+import YouTubeEmbed from "@/components/youtube-embed"
 
 export default function Home() {
   const [isPDFModalOpen, setIsPDFModalOpen] = useState(false)
@@ -82,22 +83,14 @@ export default function Home() {
           </div>
           */}
 
-          {/* Teleportation Device Activation - With Autoplay */}
+          {/* YouTube Video Section */}
           <div className="mb-12">
-            <h2 className="text-2xl font-light mb-6 tracking-wide">TELEPORTATION DEVICE ACTIVATION</h2>
-            <div className="relative overflow-hidden rounded-md">
-              <div className="bg-zinc-900 relative w-full aspect-video border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite] rounded-md">
-                <video
-                  src="/video_reels/TeleportationDeviceActivation.mp4"
-                  className="absolute inset-0 w-full h-full object-cover rounded-[4px]"
-                  loop
-                  muted={true}
-                  playsInline
-                  autoPlay={true}
-                  controls
-                />
-              </div>
-            </div>
+            <h2 className="text-2xl font-light mb-6 tracking-wide">FEATURED VFX REEL</h2>
+            <YouTubeEmbed 
+              videoId="OvgfweQ6mr4" 
+              title="Justin Foote VFX Reel" 
+              autoplay={true}
+            />
           </div>
 
           {/* Latest In-Game VFX Work - Unhidden */}
