@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import YouTubeEmbed from '@/components/youtube-embed'
 
 // Use the same VideoItem interface from VideoCarousel
@@ -24,6 +24,39 @@ export default function FeaturedVideoPlayer({
   onSelectVideo 
 }: FeaturedVideoPlayerProps) {
   const currentVideo = videos[selectedVideoIndex];
+  const [isAutoPlayEnabled, setIsAutoPlayEnabled] = useState(true);
+  const youtubePlayerRef = useRef<HTMLIFrameElement>(null);
+  const autoPlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Function to advance to the next video
+  const playNextVideo = () => {
+    if (!isAutoPlayEnabled) return;
+    
+    const nextIndex = (selectedVideoIndex + 1) % videos.length;
+    onSelectVideo(nextIndex);
+  };
+  
+  // Set up video cycle
+  useEffect(() => {
+    if (!isAutoPlayEnabled) return;
+    
+    // Clear any existing timeout
+    if (autoPlayTimeoutRef.current) {
+      clearTimeout(autoPlayTimeoutRef.current);
+    }
+    
+    // Set timeout to advance to next video after certain period
+    // For YouTube videos, we can't easily detect when they end, so we use a fixed duration
+    const videoDuration = 15000; // 15 seconds per video for demonstration
+    autoPlayTimeoutRef.current = setTimeout(playNextVideo, videoDuration);
+    
+    // Clean up
+    return () => {
+      if (autoPlayTimeoutRef.current) {
+        clearTimeout(autoPlayTimeoutRef.current);
+      }
+    };
+  }, [selectedVideoIndex, isAutoPlayEnabled]);
   
   return (
     <div className="w-full mb-6">
@@ -34,7 +67,8 @@ export default function FeaturedVideoPlayer({
             title={`Video ${selectedVideoIndex + 1}`}
             autoplay={true}
             showControls={true}
-            loop={true}
+            loop={false} // Changed to false to allow video to end
+            onEnd={playNextVideo}
           />
         ) : (
           <video
@@ -44,12 +78,31 @@ export default function FeaturedVideoPlayer({
             controls
             autoPlay
             playsInline
-            loop
+            loop={false} // Changed to false to allow video to end
+            onEnded={playNextVideo}
           />
         )}
       </div>
       
-      <div className="mt-8 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 sm:gap-4">
+      <div className="flex justify-between items-center mt-4 mb-4">
+        <div className="flex items-center">
+          <button 
+            onClick={() => setIsAutoPlayEnabled(!isAutoPlayEnabled)}
+            className={`px-3 py-1 rounded-md mr-3 text-sm ${
+              isAutoPlayEnabled 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-700 text-gray-300'
+            }`}
+          >
+            {isAutoPlayEnabled ? "Auto-Play On" : "Auto-Play Off"}
+          </button>
+        </div>
+        <div className="text-sm text-gray-400">
+          {selectedVideoIndex + 1} / {videos.length}
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2 sm:gap-4">
         {videos.map((video, index) => (
           <div
             key={index}
