@@ -1,4 +1,5 @@
 "use client"
+// Updated to use Star Wars: The Old Republic video 
 import Link from "next/link"
 import Image from "next/image"
 import { Menu, Mail, Phone, Linkedin } from "lucide-react"
