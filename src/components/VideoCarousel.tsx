@@ -395,20 +395,33 @@ const VideoCarousel = () => {
     }
   };
 
-  // Add a handler to check for video load errors and try fallback paths
+  // Enhanced error handling function for video loading issues
+  const handleVideoError = (video: HTMLVideoElement, index: number) => {
+    console.error(`Error loading video at index ${index}, attempting recovery`);
+    
+    // Try reloading the video
+    video.load();
+    
+    // Attempt playback again after a short delay
+    setTimeout(() => {
+      video.play().catch(e => {
+        console.error(`Recovery attempt failed for video ${index}:`, e);
+        // Update UI to show error state if needed
+      });
+    }, 2000);
+  };
+
+  // Add special handling for problematic videos
   useEffect(() => {
     videoRefs.current.forEach((video, index) => {
       if (!video) return;
       
-      const handleError = () => {
-        console.error(`Error loading video ${videos[index].src}, trying fallback if available`);
-        // Could implement fallback logic here if needed in the future
-      };
-      
-      video.addEventListener('error', handleError);
+      // Add error event listener
+      const errorHandler = () => handleVideoError(video, index);
+      video.addEventListener('error', errorHandler);
       
       return () => {
-        video.removeEventListener('error', handleError);
+        video.removeEventListener('error', errorHandler);
       };
     });
   }, []);
