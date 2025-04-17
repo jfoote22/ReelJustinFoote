@@ -96,10 +96,10 @@ export default function Home() {
           {/* Latest In-Game VFX Work - Unhidden */}
           <div className="mb-12">
             <h2 className="text-2xl font-light mb-6 tracking-wide">LATEST IN-GAME VFX WORK</h2>
-            <VideoPlayer 
-              title="Star Wars: The Old Republic VFX Reel" 
-              featured={true} 
-              videoSrc="/video_reels/vfx-reel--star-wars--the-old-republic.mp4"
+            <YouTubeEmbed 
+              videoId="Byraswh5Rk8" 
+              title="Justin Foote In-Game VFX Reel" 
+              autoplay={false}
             />
           </div>
 
