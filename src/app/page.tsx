@@ -75,7 +75,7 @@ export default function Home() {
           <div className="mb-16">
             <h2 className="text-2xl font-light mb-8 tracking-wide">FEATURED WORK</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="flex flex-col gap-8 mb-12">
               <div>
                 <h3 className="text-xl font-light mb-4 tracking-wide">TECHNICAL VFX WORK</h3>
                 <YouTubeEmbed 
