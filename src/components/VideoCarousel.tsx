@@ -80,6 +80,7 @@ const VideoCarousel = () => {
   const [hasMoved, setHasMoved] = useState(false);
   const [videoLoadErrors, setVideoLoadErrors] = useState<boolean[]>(new Array(videos.length).fill(false));
   const [scrollProgress, setScrollProgress] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   // Function to generate thumbnails
   useEffect(() => {
@@ -193,25 +194,30 @@ const VideoCarousel = () => {
     });
   }, []);
 
+  // Auto-scrolling effect
   useEffect(() => {
-    if (!containerRef.current || isVerticalView || isHovered) return;
+    if (!containerRef.current || isVerticalView || isHovered || isDragging) return;
     
     const container = containerRef.current;
     const scrollWidth = container.scrollWidth;
     const clientWidth = container.clientWidth;
     
     const scroll = () => {
-      if (container.scrollLeft >= scrollWidth - clientWidth) {
-        container.scrollLeft = 0;
+      if (container.scrollLeft >= scrollWidth - clientWidth - 10) {
+        // When reaching the end, smoothly scroll back to start
+        container.scrollTo({
+          left: 0,
+          behavior: 'smooth'
+        });
       } else {
-        container.scrollLeft += 0.8;
+        container.scrollLeft += 1; // Slower scroll speed for smoother movement
       }
     };
-
-    const intervalId = setInterval(scroll, 16);
-
+    
+    const intervalId = setInterval(scroll, 30); // Lower speed, higher interval for smoother scrolling
+    
     return () => clearInterval(intervalId);
-  }, [isVerticalView, isHovered]);
+  }, [isVerticalView, isHovered, isDragging]);
 
   // Add click outside handler
   useEffect(() => {
@@ -432,11 +438,14 @@ const VideoCarousel = () => {
     if (!container || isVerticalView) return;
     
     const handleScroll = () => {
-      const scrollLeft = container.scrollLeft;
+      const currentScrollLeft = container.scrollLeft;
       const scrollWidth = container.scrollWidth - container.clientWidth;
-      const progress = scrollLeft / scrollWidth;
+      const progress = currentScrollLeft / scrollWidth;
       setScrollProgress(progress);
     };
+    
+    // Initial calculation
+    handleScroll();
     
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
@@ -451,6 +460,22 @@ const VideoCarousel = () => {
   const scrollCarouselRight = () => {
     if (!containerRef.current || isVerticalView) return;
     containerRef.current.scrollBy({ left: 500, behavior: 'smooth' });
+  };
+
+  // Function to handle click on the progress bar
+  const handleProgressBarClick = (e: React.MouseEvent) => {
+    if (isVerticalView || !containerRef.current || !progressBarRef.current) return;
+    
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const clickPosition = e.clientX - rect.left;
+    const progressBarWidth = rect.width;
+    const clickProgress = clickPosition / progressBarWidth;
+    
+    const scrollDistance = (containerRef.current.scrollWidth - containerRef.current.clientWidth) * clickProgress;
+    containerRef.current.scrollTo({
+      left: scrollDistance,
+      behavior: 'smooth'
+    });
   };
 
   return (
@@ -667,17 +692,28 @@ const VideoCarousel = () => {
                 variant="ghost" 
                 size="icon" 
                 onClick={scrollCarouselLeft}
-                className="h-8 w-8 rounded-full border border-gray-600 bg-black/50 hover:bg-white/10"
+                className="h-10 w-10 rounded-full border border-gray-600 bg-black/50 hover:bg-white/20 transition-colors duration-200"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-6 w-6" />
                 <span className="sr-only">Scroll left</span>
               </Button>
               
               {/* Progress bar */}
-              <div className="relative flex-1 h-2 bg-gray-800 rounded overflow-hidden">
+              <div 
+                ref={progressBarRef}
+                className="relative flex-1 h-3 bg-gray-800/70 rounded-full overflow-hidden cursor-pointer hover:bg-gray-700/90 transition-colors duration-200"
+                onClick={handleProgressBarClick}
+              >
                 <div 
-                  className="absolute top-0 left-0 h-full bg-gray-400 rounded transition-all duration-150 ease-out"
+                  className="absolute top-0 left-0 h-full bg-gray-400 hover:bg-gray-300 rounded-full transition-all duration-150 ease-out"
                   style={{ width: `${scrollProgress * 100}%` }}
+                />
+                <div 
+                  className="absolute top-0 left-0 h-full w-4 rounded-full bg-white/20"
+                  style={{ 
+                    left: `calc(${scrollProgress * 100}% - 8px)`,
+                    display: scrollProgress > 0 ? 'block' : 'none' 
+                  }}
                 />
               </div>
               
@@ -686,9 +722,9 @@ const VideoCarousel = () => {
                 variant="ghost" 
                 size="icon" 
                 onClick={scrollCarouselRight}
-                className="h-8 w-8 rounded-full border border-gray-600 bg-black/50 hover:bg-white/10"
+                className="h-10 w-10 rounded-full border border-gray-600 bg-black/50 hover:bg-white/20 transition-colors duration-200"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-6 w-6" />
                 <span className="sr-only">Scroll right</span>
               </Button>
             </div>
