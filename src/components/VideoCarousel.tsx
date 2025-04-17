@@ -34,7 +34,7 @@ const videos = [
     thumbnail: '/video_reels/thumbnails/mortar-thumb.jpg'
   },
   {
-    src: '/video_reels/Microsoft Hololens Logo Trim.mp4',
+    src: '/video_reels/MicrosoftHololensLogoTrim.mp4',
     thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg'
   },
   {
