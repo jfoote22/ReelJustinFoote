@@ -80,22 +80,26 @@ export default function Home() {
             <div className="flex flex-col gap-8 mb-12">
               <div>
                 <h3 className="text-xl font-light mb-4 tracking-wide">TECHNICAL VFX WORK</h3>
-                <YouTubeEmbed 
-                  videoId="OvgfweQ6mr4" 
-                  title="Justin Foote Technical VFX Reel" 
-                  autoplay={true}
-                  loop={true}
-                />
+                <div className="w-full bg-gray-900 rounded-md overflow-hidden border-[3px] border-gray-500/20 aspect-video">
+                  <YouTubeEmbed 
+                    videoId="OvgfweQ6mr4" 
+                    title="Justin Foote Technical VFX Reel" 
+                    autoplay={true}
+                    loop={true}
+                  />
+                </div>
               </div>
               
               <div>
                 <h3 className="text-xl font-light mb-4 tracking-wide">IN-GAME VFX WORK</h3>
-                <YouTubeEmbed 
-                  videoId="Byraswh5Rk8" 
-                  title="Justin Foote In-Game VFX Reel"
-                  autoplay={true}
-                  loop={true}
-                />
+                <div className="w-full bg-gray-900 rounded-md overflow-hidden border-[3px] border-gray-500/20 aspect-video">
+                  <YouTubeEmbed 
+                    videoId="Byraswh5Rk8" 
+                    title="Justin Foote In-Game VFX Reel"
+                    autoplay={true}
+                    loop={true}
+                  />
+                </div>
               </div>
             </div>
             
