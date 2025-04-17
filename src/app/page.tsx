@@ -85,9 +85,9 @@ export default function Home() {
           <div className="mb-12">
             <h2 className="text-2xl font-light mb-6 tracking-wide">LATEST IN-GAME VFX WORK</h2>
             <VideoPlayer 
-              title="2016 VFX Demo Reel" 
+              title="Star Wars: The Old Republic VFX Reel" 
               featured={true} 
-              videoSrc="/video_reels/JustinFoote_Reel_2016.mp4"
+              videoSrc="/video_reels/vfx-reel--star-wars--the-old-republic.mp4"
             />
           </div>
 
