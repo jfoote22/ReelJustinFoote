@@ -1,34 +1,22 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Play, Pause, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import YouTubeEmbed from './youtube-embed';
+import YouTubeEmbed from '@/components/youtube-embed';
 
 // Define the interface for video items
-interface VideoItem {
+export interface VideoItem {
   src: string;
   thumbnail: string;
-  fallbackSrc?: string;
-  type?: 'video' | 'youtube';
-  videoId?: string;
+  fallbackSrc?: string; // Optional fallback source if main source fails
+  type?: 'video' | 'youtube'; // Add type to differentiate between normal videos and YouTube embeds
+  videoId?: string; // YouTube video ID if type is 'youtube'
 }
 
-// Props for the VideoCarousel component
-interface VideoCarouselProps {
-  selectedMainVideo?: string;
-  onSelectVideo?: (videoId: string) => void;
-}
-
-// Add Justin Foote's reel video and other videos
-const videos: VideoItem[] = [
-  {
-    src: '/video_reels/justin-foote-reel.mp4',
-    thumbnail: '/video_reels/thumbnails/justin-foote-reel-thumb.jpg',
-    type: 'youtube',
-    videoId: 'Byraswh5Rk8' // Justin Foote In-Game VFX Reel
-  },
+// Remove Hololens videos and use working videos only
+export const videos: VideoItem[] = [
   {
     src: '/video_reels/vfx-reel--star-wars--the-old-republic.mp4',
     thumbnail: '/video_reels/thumbnails/star-wars-thumb.jpg',
@@ -67,28 +55,25 @@ const videos: VideoItem[] = [
   },
   {
     src: '/video_reels/destiny-effects.mp4',
-    thumbnail: '/video_reels/thumbnails/destiny-thumb.jpg',
+    thumbnail: '/video_reels/thumbnails/hololens-thumb.jpg',
     type: 'youtube',
     videoId: 'ie3wRVpzd8o'
   },
   {
     src: '/video_reels/mass-effect-andromeda.mp4',
-    thumbnail: '/video_reels/thumbnails/mass-effect-thumb.jpg',
+    thumbnail: '/video_reels/thumbnails/shipcrash-thumb.jpg',
     type: 'youtube',
     videoId: 'uGglLTqU10w'
   }
 ];
 
-const VideoCarousel = ({ selectedMainVideo, onSelectVideo }: VideoCarouselProps) => {
+const VideoCarousel = () => {
   const [isVerticalView, setIsVerticalView] = useState(false);
   const [playingStates, setPlayingStates] = useState<boolean[]>([]);
   const [videoLoadErrors, setVideoLoadErrors] = useState<boolean[]>([]);
-  const [visibleYouTubeVideos, setVisibleYouTubeVideos] = useState<number[]>([0, 1, 2]); // Initially show first 3 videos
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedVideoIndex, setSelectedVideoIndex] = useState<number | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const videoElementRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   // Function to generate thumbnails
   const generateThumbnails = async () => {
@@ -150,50 +135,9 @@ const VideoCarousel = ({ selectedMainVideo, onSelectVideo }: VideoCarouselProps)
     
     // Initialize video refs
     videoRefs.current = videoRefs.current.slice(0, videos.length);
-    videoElementRefs.current = videoElementRefs.current.slice(0, videos.length);
     
     // Generate thumbnails if needed
     generateThumbnails();
-    
-    // Initialize intersection observer for lazy loading
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const index = Number(entry.target.getAttribute('data-index'));
-        if (!isNaN(index)) {
-          if (entry.isIntersecting) {
-            setVisibleYouTubeVideos(prev => {
-              if (prev.includes(index)) return prev;
-              return [...prev, index];
-            });
-          }
-        }
-      });
-    }, {
-      rootMargin: '100px', // Start loading when within 100px of viewport
-      threshold: 0.1
-    });
-    
-    return () => {
-      // Clean up observer
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  // Set up observers for video elements
-  useEffect(() => {
-    videoElementRefs.current.forEach((el, index) => {
-      if (el && observerRef.current) {
-        observerRef.current.observe(el);
-      }
-    });
-    
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
   }, []);
 
   const handlePlay = (index: number, e?: React.MouseEvent) => {
@@ -230,45 +174,26 @@ const VideoCarousel = ({ selectedMainVideo, onSelectVideo }: VideoCarouselProps)
     }
   };
   
-  // Handle video selection - now also passes to parent component
-  const handleVideoSelect = useCallback((index: number, e?: React.MouseEvent) => {
-    e?.stopPropagation();
+  // Add a function to handle video selection
+  const handleVideoSelect = (index: number) => {
     setSelectedVideoIndex(index);
-    
-    // If the video is a YouTube video and we have a callback, send the videoId to the parent
-    if (videos[index].type === 'youtube' && videos[index].videoId && onSelectVideo) {
-      onSelectVideo(videos[index].videoId);
-    }
-    
     setIsVerticalView(true);
-  }, [onSelectVideo]);
+  };
   
   // Add a function to close the modal
-  const handleCloseModal = useCallback(() => {
+  const handleCloseModal = () => {
     setIsVerticalView(false);
     setSelectedVideoIndex(null);
-  }, []);
-
-  // Check if video is in viewport and should be loaded
-  const shouldLoadVideo = (index: number): boolean => {
-    if (videos[index].type !== 'youtube') return true;
-    return visibleYouTubeVideos.includes(index);
   };
   
   return (
     <section className="w-full py-6 sm:py-12">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-        {videos.map((video, index) => {
-          // Check if this video is currently selected in the main video section
-          const isSelectedInMain = video.videoId === selectedMainVideo;
-          
-          return (
+        {videos.map((video, index) => (
           <div 
-            key={index}
-            ref={(el) => { videoElementRefs.current[index] = el; }}
-            data-index={index}
-            className={`relative bg-gray-900 rounded-md overflow-hidden border-[2px] sm:border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite] aspect-video cursor-pointer ${isSelectedInMain ? 'ring-2 ring-white' : ''}`}
-            onClick={(e) => handleVideoSelect(index, e)}
+            key={index} 
+            className="relative bg-gray-900 rounded-md overflow-hidden border-[2px] sm:border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite] aspect-video cursor-pointer"
+            onClick={() => handleVideoSelect(index)}
           >
             {videoLoadErrors[index] ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black">
@@ -284,76 +209,45 @@ const VideoCarousel = ({ selectedMainVideo, onSelectVideo }: VideoCarouselProps)
                 </div>
               </div>
             ) : video.type === 'youtube' ? (
-              <div className={`w-full h-full ${isSelectedInMain ? 'opacity-40' : ''}`}>
-                {shouldLoadVideo(index) ? (
-                  <YouTubeEmbed
-                    videoId={video.videoId as string}
-                    title={`Video ${index + 1}`}
-                    autoplay={index < 3} // Only autoplay first 3 videos
-                    showControls={true}
-                    loop={true}
-                  />
-                ) : (
-                  // Placeholder for not-yet-loaded YouTube videos
-                  <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
-                    <Image 
-                      src={video.thumbnail || '/video_reels/thumbnails/loading-thumb.jpg'}
-                      alt="Video thumbnail"
-                      width={600}
-                      height={337}
-                      className="w-full h-full object-cover opacity-80"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <div className="animate-pulse w-12 h-12 rounded-full bg-white/30 flex items-center justify-center">
-                        <Play className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {isSelectedInMain && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <p className="text-white font-medium">Currently Playing</p>
-                  </div>
-                )}
+              <div className="w-full h-full">
+                <YouTubeEmbed
+                  videoId={video.videoId as string}
+                  title={`Video ${index + 1}`}
+                  autoplay={false}
+                  showControls={true}
+                />
               </div>
             ) : (
-              <div className={isSelectedInMain ? 'opacity-40' : ''}>
-                <video
-                  ref={(el) => {
-                    videoRefs.current[index] = el;
-                  }}
-                  style={{
-                    objectFit: 'cover',
-                  }}
-                  className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
-                  src={video.src}
-                  poster={video.thumbnail}
-                  autoPlay={index < 3} // Only autoplay first 3 videos
-                  preload="metadata" // Just load metadata initially for better performance
-                  playsInline
-                  muted
-                  loop
-                  onError={(e) => {
-                    const target = e.target as HTMLVideoElement;
-                    // Try fallback if available
-                    if (video.fallbackSrc && target.src !== video.fallbackSrc) {
-                      console.log(`Trying fallback for video ${index}`);
-                      target.src = video.fallbackSrc;
-                      target.load();
-                    } else {
-                      console.error(`Video ${index} failed to load:`, e);
-                      const newErrors = [...videoLoadErrors];
-                      newErrors[index] = true;
-                      setVideoLoadErrors(newErrors);
-                    }
-                  }}
-                />
-                {isSelectedInMain && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                    <p className="text-white font-medium">Currently Playing</p>
-                  </div>
-                )}
-              </div>
+              <video
+                ref={(el) => {
+                  videoRefs.current[index] = el;
+                }}
+                style={{
+                  objectFit: 'cover',
+                }}
+                className="w-full h-full object-cover rounded-[2px] sm:rounded-[4px]"
+                src={video.src}
+                poster={video.thumbnail}
+                autoPlay
+                preload="auto"
+                playsInline
+                muted
+                loop
+                onError={(e) => {
+                  const target = e.target as HTMLVideoElement;
+                  // Try fallback if available
+                  if (video.fallbackSrc && target.src !== video.fallbackSrc) {
+                    console.log(`Trying fallback for video ${index}`);
+                    target.src = video.fallbackSrc;
+                    target.load();
+                  } else {
+                    console.error(`Video ${index} failed to load:`, e);
+                    const newErrors = [...videoLoadErrors];
+                    newErrors[index] = true;
+                    setVideoLoadErrors(newErrors);
+                  }
+                }}
+              />
             )}
             
             {/* Video controls overlay */}
@@ -388,7 +282,7 @@ const VideoCarousel = ({ selectedMainVideo, onSelectVideo }: VideoCarouselProps)
               </div>
             )}
           </div>
-        )})}
+        ))}
       </div>
       
       {/* Modal for expanded video view */}

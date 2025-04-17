@@ -2,7 +2,7 @@
 // Updated to use Star Wars: The Old Republic video 
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, Mail, Phone, Linkedin, FileText, ExternalLink } from "lucide-react"
+import { Menu, Mail, Phone, Linkedin } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -10,18 +10,14 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import BackgroundSlider from "@/components/background-slider"
 import VideoPlayer from "@/components/video-player"
 import PDFModal from "@/components/pdf-modal"
-import VideoCarousel from "@/components/VideoCarousel"
+import VideoCarousel, { videos } from "@/components/VideoCarousel"
 import PDFEmbed from "@/components/pdf-embed"
 import YouTubeEmbed from "@/components/youtube-embed"
+import FeaturedVideoPlayer from "@/components/FeaturedVideoPlayer"
 
 export default function Home() {
   const [isPDFModalOpen, setIsPDFModalOpen] = useState(false)
-  const [selectedVideoId, setSelectedVideoId] = useState<string>("Byraswh5Rk8") // Default to Justin Foote's reel
-
-  // Handle video selection from the carousel
-  const handleVideoSelect = (videoId: string) => {
-    setSelectedVideoId(videoId)
-  }
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -41,7 +37,7 @@ export default function Home() {
               onClick={() => setIsPDFModalOpen(true)}
               style={{ fontFamily: 'inherit' }}
             >
-              <FileText className="h-4 w-4 mr-2" /> Resume
+              Resume
             </Button>
             <Link href="#contact" className="hover:text-gray-300 transition-colors">
               Contact
@@ -51,7 +47,7 @@ export default function Home() {
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon" className="text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                <Menu />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
@@ -62,7 +58,7 @@ export default function Home() {
                   className="text-xl text-white hover:text-gray-300 transition-colors justify-start p-0 h-auto"
                   onClick={() => setIsPDFModalOpen(true)}
                 >
-                  <FileText className="h-4 w-4 mr-2" /> Resume
+                  Resume
                 </Button>
                 <Link href="#contact" className="text-xl hover:text-gray-300 transition-colors">
                   Contact
@@ -95,7 +91,7 @@ export default function Home() {
               <div>
                 <h3 className="text-xl font-light mb-4 tracking-wide">IN-GAME VFX WORK</h3>
                 <YouTubeEmbed 
-                  videoId={selectedVideoId} 
+                  videoId="Byraswh5Rk8" 
                   title="Justin Foote In-Game VFX Reel"
                   autoplay={true}
                   loop={true}
@@ -104,9 +100,10 @@ export default function Home() {
             </div>
             
             <h2 className="text-2xl font-light mb-6 tracking-wide">PREVIOUS WORK</h2>
-            <VideoCarousel 
-              selectedMainVideo={selectedVideoId}
-              onSelectVideo={handleVideoSelect}
+            <FeaturedVideoPlayer 
+              videos={videos} 
+              selectedVideoIndex={selectedVideoIndex} 
+              onSelectVideo={setSelectedVideoIndex} 
             />
           </div>
 
@@ -188,11 +185,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      {/* PDF Viewer Modal */}
-      {isPDFModalOpen && (
-        <PDFEmbed pdfUrl="/JustinFoote_Resume_2024.pdf" onClose={() => setIsPDFModalOpen(false)} />
-      )}
     </div>
   )
 }
