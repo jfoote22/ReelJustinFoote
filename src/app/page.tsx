@@ -82,6 +82,24 @@ export default function Home() {
           </div>
           */}
 
+          {/* Teleportation Device Activation - With Autoplay */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-light mb-6 tracking-wide">TELEPORTATION DEVICE ACTIVATION</h2>
+            <div className="relative overflow-hidden rounded-md">
+              <div className="bg-zinc-900 relative w-full aspect-video border-[3px] border-gray-500/20 animate-[shimmer_4s_ease-in-out_infinite] rounded-md">
+                <video
+                  src="/video_reels/TeleportationDeviceActivation.mp4"
+                  className="absolute inset-0 w-full h-full object-cover rounded-[4px]"
+                  loop
+                  muted={true}
+                  playsInline
+                  autoPlay={true}
+                  controls
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Latest In-Game VFX Work - Unhidden */}
           <div className="mb-12">
             <h2 className="text-2xl font-light mb-6 tracking-wide">LATEST IN-GAME VFX WORK</h2>
