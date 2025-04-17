@@ -71,8 +71,33 @@ export default function Home() {
 
       <main className="pt-[calc(20vh+200px)] sm:pt-[calc(25vh+250px)] pb-16 relative z-10">
         <section id="reels" className="container mx-auto px-4 md:px-6 max-w-7xl">
-          {/* Video Carousel */}
+          {/* Featured Reels */}
           <div className="mb-16">
+            <h2 className="text-2xl font-light mb-8 tracking-wide">FEATURED WORK</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <div>
+                <h3 className="text-xl font-light mb-4 tracking-wide">TECHNICAL VFX WORK</h3>
+                <YouTubeEmbed 
+                  videoId="OvgfweQ6mr4" 
+                  title="Justin Foote Technical VFX Reel" 
+                  autoplay={false}
+                  loop={true}
+                />
+              </div>
+              
+              <div>
+                <h3 className="text-xl font-light mb-4 tracking-wide">IN-GAME VFX WORK</h3>
+                <YouTubeEmbed 
+                  videoId="Byraswh5Rk8" 
+                  title="Justin Foote In-Game VFX Reel"
+                  autoplay={false}
+                  loop={true}
+                />
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-light mb-6 tracking-wide">PREVIOUS WORK</h2>
             <VideoCarousel />
           </div>
 
