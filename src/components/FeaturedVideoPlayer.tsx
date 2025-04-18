@@ -90,7 +90,7 @@ export default function FeaturedVideoPlayer({
             onClick={() => setIsAutoPlayEnabled(!isAutoPlayEnabled)}
             className={`px-4 py-1.5 rounded-md mr-3 text-sm font-light tracking-wider
               ${isAutoPlayEnabled 
-                ? 'bg-gray-300 text-black border-[2px] border-gray-500/20' 
+                ? 'bg-transparent text-white border-[2px] border-gray-400/30' 
                 : 'bg-gray-700 text-white border-[2px] border-gray-500/20'
               }`}
             style={{ fontFamily: 'inherit' }}
