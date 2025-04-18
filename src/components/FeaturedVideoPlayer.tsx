@@ -88,16 +88,17 @@ export default function FeaturedVideoPlayer({
         <div className="flex items-center">
           <button 
             onClick={() => setIsAutoPlayEnabled(!isAutoPlayEnabled)}
-            className={`px-3 py-1 rounded-md mr-3 text-sm ${
-              isAutoPlayEnabled 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-700 text-gray-300'
-            }`}
+            className={`px-4 py-1.5 rounded-md mr-3 text-sm font-light tracking-wider
+              ${isAutoPlayEnabled 
+                ? 'bg-gray-300 text-black border-[2px] border-gray-500/20' 
+                : 'bg-gray-700 text-white border-[2px] border-gray-500/20'
+              }`}
+            style={{ fontFamily: 'inherit' }}
           >
-            {isAutoPlayEnabled ? "Auto-Play On" : "Auto-Play Off"}
+            {isAutoPlayEnabled ? "AUTO-PLAY ON" : "AUTO-PLAY OFF"}
           </button>
         </div>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-gray-400 font-light tracking-wide">
           {selectedVideoIndex + 1} / {videos.length}
         </div>
       </div>
