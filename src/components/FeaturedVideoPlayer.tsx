@@ -16,12 +16,16 @@ interface FeaturedVideoPlayerProps {
   videos: VideoItem[];
   selectedVideoIndex: number;
   onSelectVideo: (index: number) => void;
+  onAutoPlayChange?: (enabled: boolean) => void;
+  descriptionModal?: React.ReactNode;
 }
 
 export default function FeaturedVideoPlayer({ 
   videos, 
   selectedVideoIndex, 
-  onSelectVideo 
+  onSelectVideo,
+  onAutoPlayChange,
+  descriptionModal
 }: FeaturedVideoPlayerProps) {
   const currentVideo = videos[selectedVideoIndex];
   const [isAutoPlayEnabled, setIsAutoPlayEnabled] = useState(true);
@@ -36,19 +40,12 @@ export default function FeaturedVideoPlayer({
     onSelectVideo(nextIndex);
   };
   
-  // Set up video cycle
+  // Set up video cycle - now relies on video end events instead of fixed timeout
   useEffect(() => {
-    if (!isAutoPlayEnabled) return;
-    
-    // Clear any existing timeout
+    // Clear any existing timeout when video changes or auto-play is disabled
     if (autoPlayTimeoutRef.current) {
       clearTimeout(autoPlayTimeoutRef.current);
     }
-    
-    // Set timeout to advance to next video after certain period
-    // For YouTube videos, we can't easily detect when they end, so we use a fixed duration
-    const videoDuration = 15000; // 15 seconds per video for demonstration
-    autoPlayTimeoutRef.current = setTimeout(playNextVideo, videoDuration);
     
     // Clean up
     return () => {
@@ -84,10 +81,16 @@ export default function FeaturedVideoPlayer({
         )}
       </div>
       
+      {descriptionModal}
+      
       <div className="flex justify-between items-center mt-4 mb-4">
         <div className="flex items-center">
           <button 
-            onClick={() => setIsAutoPlayEnabled(!isAutoPlayEnabled)}
+            onClick={() => {
+              const newAutoPlayState = !isAutoPlayEnabled;
+              setIsAutoPlayEnabled(newAutoPlayState);
+              onAutoPlayChange?.(newAutoPlayState);
+            }}
             className={`px-4 py-1.5 rounded-md mr-3 text-sm font-light tracking-wider
               ${isAutoPlayEnabled 
                 ? 'bg-transparent text-white border-[2px] border-gray-400/30' 

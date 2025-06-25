@@ -10,14 +10,18 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import BackgroundSlider from "@/components/background-slider"
 import VideoPlayer from "@/components/video-player"
 import PDFModal from "@/components/pdf-modal"
-import VideoCarousel, { videos } from "@/components/VideoCarousel"
+import VideoCarousel, { videos, technicalVfxVideos, inGameVfxVideos } from "@/components/VideoCarousel"
 import PDFEmbed from "@/components/pdf-embed"
 import YouTubeEmbed from "@/components/youtube-embed"
 import FeaturedVideoPlayer from "@/components/FeaturedVideoPlayer"
+import VideoDescriptionModal from "@/components/VideoDescriptionModal"
 
 export default function Home() {
   const [isPDFModalOpen, setIsPDFModalOpen] = useState(false)
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0)
+  const [selectedTechnicalVideoIndex, setSelectedTechnicalVideoIndex] = useState(0)
+  const [selectedInGameVideoIndex, setSelectedInGameVideoIndex] = useState(0)
+  const [isTechnicalAutoPlayEnabled, setIsTechnicalAutoPlayEnabled] = useState(true)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -27,6 +31,7 @@ export default function Home() {
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <Link href="/" className="flex flex-col text-xl sm:text-2xl font-light tracking-wider">
             <span>JUSTIN FOOTE</span>
+            <span>LEAD VFX ARTIST</span>
             <span>TECHNICAL VFX ARTIST</span>
           </Link>
 
@@ -80,26 +85,28 @@ export default function Home() {
             <div className="flex flex-col gap-8 mb-12">
               <div>
                 <h3 className="text-xl font-light mb-4 tracking-wide">TECHNICAL VFX WORK</h3>
-                <div className="w-full bg-gray-900 rounded-md overflow-hidden border-[3px] border-gray-500/20 aspect-video">
-                  <YouTubeEmbed 
-                    videoId="OvgfweQ6mr4" 
-                    title="Justin Foote Technical VFX Reel" 
-                    autoplay={true}
-                    loop={true}
-                  />
-                </div>
+                <FeaturedVideoPlayer 
+                  videos={technicalVfxVideos} 
+                  selectedVideoIndex={selectedTechnicalVideoIndex} 
+                  onSelectVideo={setSelectedTechnicalVideoIndex}
+                  onAutoPlayChange={setIsTechnicalAutoPlayEnabled}
+                  descriptionModal={
+                    <VideoDescriptionModal 
+                      videos={technicalVfxVideos} 
+                      selectedVideoIndex={selectedTechnicalVideoIndex} 
+                      isAutoPlayEnabled={isTechnicalAutoPlayEnabled}
+                    />
+                  }
+                />
               </div>
               
               <div>
                 <h3 className="text-xl font-light mb-4 tracking-wide">IN-GAME VFX WORK</h3>
-                <div className="w-full bg-gray-900 rounded-md overflow-hidden border-[3px] border-gray-500/20 aspect-video">
-                  <YouTubeEmbed 
-                    videoId="Byraswh5Rk8" 
-                    title="Justin Foote In-Game VFX Reel"
-                    autoplay={true}
-                    loop={true}
-                  />
-                </div>
+                <FeaturedVideoPlayer 
+                  videos={inGameVfxVideos} 
+                  selectedVideoIndex={selectedInGameVideoIndex} 
+                  onSelectVideo={setSelectedInGameVideoIndex} 
+                />
               </div>
             </div>
             

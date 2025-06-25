@@ -13,7 +13,93 @@ export interface VideoItem {
   fallbackSrc?: string; // Optional fallback source if main source fails
   type?: 'video' | 'youtube'; // Add type to differentiate between normal videos and YouTube embeds
   videoId?: string; // YouTube video ID if type is 'youtube'
+  title?: string; // Title for the video
+  description?: string; // Description for the video
 }
+
+// Technical VFX work videos array - reordered per user request
+export const technicalVfxVideos: VideoItem[] = [
+  {
+    src: '/video_reels/generated-buildings.mp4',
+    thumbnail: 'https://img.youtube.com/vi/DT5G3mxiBoo/maxresdefault.jpg',
+    type: 'youtube',
+    videoId: 'DT5G3mxiBoo',
+    title: 'Procedural Building Generator',
+    description: 'A Houdini-based tool for generating randomized building structures with configurable parameters. This system creates diverse architectural elements including walls, windows, doors, and roofing details, allowing for rapid prototyping of urban environments with realistic variation.'
+  },
+  {
+    src: '/video_reels/ground-cable-generator.mp4',
+    thumbnail: 'https://img.youtube.com/vi/5Xl0kXeAL5E/maxresdefault.jpg',
+    type: 'youtube',
+    videoId: '5Xl0kXeAL5E',
+    title: 'Physics Based Cable Generator',
+    description: 'An advanced cable simulation system that automatically generates realistic power lines and cables that conform to terrain geometry. The tool calculates proper tension, sag, and physics-based behavior while maintaining performance optimization for real-time applications.'
+  },
+  {
+    src: '/video_reels/foliage-generator.mp4',
+    thumbnail: 'https://img.youtube.com/vi/WXFde915cDo/hqdefault.jpg',
+    type: 'youtube',
+    videoId: 'WXFde915cDo',
+    title: 'Top Surface Foliage Generator',
+    description: 'A Houdini-based procedural system for generating realistic foliage and vegetation on terrain surfaces. This tool automatically distributes grass, plants, and ground cover based on surface properties, slope angles, and environmental factors for natural-looking landscape generation.'
+  },
+  {
+    src: '/video_reels/cable-generator.mp4',
+    thumbnail: 'https://img.youtube.com/vi/fMpmnO3q7w8/maxresdefault.jpg',
+    type: 'youtube',
+    videoId: 'fMpmnO3q7w8',
+    title: 'Stylized Tree Generator',
+    description: 'A sophisticated tree generation system built in Houdini that creates realistic tree structures with natural branching patterns, seasonal variations, and wind simulation. Includes bark texturing, leaf distribution, and optimization tools for game-ready assets.'
+  },
+  {
+    src: '/video_reels/vine-generator.mp4',
+    thumbnail: 'https://img.youtube.com/vi/cXx5G3UhGKs/maxresdefault.jpg',
+    type: 'youtube',
+    videoId: 'cXx5G3UhGKs',
+    title: 'Curve Based Cable Generator',
+    description: 'A comprehensive cable generation system for creating overhead power lines, suspension cables, and industrial wire networks. Features dynamic length calculation, automatic pole placement, and realistic physics simulation with customizable materials and weathering effects.'
+  },
+  {
+    src: '/video_reels/fountain-simulation-vat-FINAL.mp4',
+    thumbnail: 'https://img.youtube.com/vi/eyx92HTPlc0/hqdefault.jpg',
+    type: 'youtube',
+    videoId: 'eyx92HTPlc0',
+    title: 'Procedural Vine Generator',
+    description: 'A procedural vine and vegetation growth system that creates natural-looking organic structures. The tool simulates realistic growth patterns, branch distribution, and leaf placement while providing artist-friendly controls for shaping and directing growth behavior.'
+  },
+  {
+    src: '/video_reels/pipe-generator.mp4',
+    thumbnail: 'https://img.youtube.com/vi/sLYg3IkzJZM/hqdefault.jpg',
+    type: 'youtube',
+    videoId: 'sLYg3IkzJZM',
+    title: 'Pipe Generator',
+    description: 'Houdini based tool for generating pipes and sprinkler systems along ceilings or for industrial or plumbing situations.'
+  },
+  {
+    src: '/video_reels/tree-generator.mp4',
+    thumbnail: 'https://img.youtube.com/vi/nA7jJctTQgo/maxresdefault.jpg',
+    type: 'youtube',
+    videoId: 'nA7jJctTQgo',
+    title: 'Fountain Simulation',
+    description: 'A complex fluid simulation system showcasing advanced water dynamics for fountain and water feature design. Utilizes Vertex Animation Textures (VAT) for efficient real-time playback while maintaining high-quality fluid behavior and realistic water interaction physics.'
+  }
+];
+
+// In-Game VFX work videos array - two videos for the featured section
+export const inGameVfxVideos: VideoItem[] = [
+  {
+    src: '/video_reels/in-game-vfx-reel-2.mp4',
+    thumbnail: 'https://img.youtube.com/vi/Byraswh5Rk8/hqdefault.jpg',
+    type: 'youtube',
+    videoId: 'Byraswh5Rk8' // Justin Foote In-Game VFX Reel
+  },
+  {
+    src: '/video_reels/in-game-vfx-reel.mp4',
+    thumbnail: 'https://img.youtube.com/vi/4h8lpa2iuso/hqdefault.jpg',
+    type: 'youtube',
+    videoId: '4h8lpa2iuso' // Arma Aura weapon BFX
+  }
+];
 
 // Remove Hololens videos and use working videos only
 export const videos: VideoItem[] = [
